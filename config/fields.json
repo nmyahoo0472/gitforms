@@ -1,16 +1,57 @@
 {
-  "it": {
-    "firstName": "Nome",
-    "lastName": "Cognome",
-    "email": "Email",
-    "company": "Azienda",
-    "message": "Messaggio"
+  "labels": {
+    "it": {
+      "firstName": "Nome",
+      "lastName": "Cognome",
+      "email": "Email",
+      "company": "Azienda",
+      "message": "Messaggio"
+    },
+    "en": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "company": "Company",
+      "message": "Message"
+    }
   },
-  "en": {
-    "firstName": "First Name",
-    "lastName": "Last Name",
-    "email": "Email",
-    "company": "Company",
-    "message": "Message"
+  "form": {
+    "fields": [
+      {
+        "id": "firstName",
+        "type": "text",
+        "required": true,
+        "colSpan": 1,
+        "validation": { "min": 1, "max": 100 }
+      },
+      {
+        "id": "lastName",
+        "type": "text",
+        "required": true,
+        "colSpan": 1,
+        "validation": { "min": 1, "max": 100 }
+      },
+      {
+        "id": "email",
+        "type": "email",
+        "required": true,
+        "colSpan": 2,
+        "validation": { "max": 254 }
+      },
+      {
+        "id": "company",
+        "type": "text",
+        "required": false,
+        "colSpan": 2,
+        "validation": { "max": 200 }
+      },
+      {
+        "id": "message",
+        "type": "textarea",
+        "required": true,
+        "colSpan": 2,
+        "validation": { "min": 20, "max": 5000 }
+      }
+    ]
   }
 }

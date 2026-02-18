@@ -1,4 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { checkRateLimit } from '../../../lib/rateLimit'
+import { sanitizeText, sanitizeEmail } from '../../../lib/sanitize'
+import { calculateSpamScore } from '../../../lib/spamScore'
+import { classifyLead } from '../../../lib/classify'
+import translations from '../../../../config/translations.json'
+
+type Locale = 'en' | 'it'
+type TranslationMessages = typeof translations.en.messages
+
+function getLocale(request: NextRequest): Locale {
+  const acceptLanguage = request.headers.get('accept-language') ?? ''
+  return acceptLanguage.toLowerCase().includes('it') ? 'it' : 'en'
+}
+
+function msg(locale: Locale, key: keyof TranslationMessages, vars?: Record<string, string | number>): string {
+  const t = translations[locale]?.messages ?? translations.en.messages
+  let text: string = (t as TranslationMessages)[key] ?? (translations.en.messages[key] as string)
+  if (vars) {
+    for (const [k, v] of Object.entries(vars)) {
+      text = text.replace(`{${k}}`, String(v))
+    }
+  }
+  return text
+}
 
 interface ContactFormData {
   firstName: string
@@ -6,37 +30,74 @@ interface ContactFormData {
   email: string
   company?: string
   message: string
+  // Honeypot — must be empty for real users
+  website?: string
 }
 
 export async function POST(request: NextRequest) {
+  const locale = getLocale(request)
+
   try {
+    // ── Rate limiting ──────────────────────────────────────────────────────
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+      request.headers.get('x-real-ip') ??
+      'unknown'
+
+    const rateCheck = checkRateLimit(ip)
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { error: msg(locale, 'tooManyRequests', { seconds: rateCheck.retryAfter }) },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(rateCheck.retryAfter),
+            'X-RateLimit-Remaining': '0',
+          },
+        }
+      )
+    }
+
     const body: ContactFormData = await request.json()
 
-    // Validate required fields (company is optional)
-    if (!body.firstName || !body.lastName || !body.email || !body.message) {
+    // ── Honeypot check ─────────────────────────────────────────────────────
+    // Real users leave this hidden field empty; bots fill it.
+    // Return 200 silently to avoid revealing detection.
+    if (body.website && body.website.trim().length > 0) {
+      return NextResponse.json({ success: true }, { status: 200 })
+    }
+
+    // ── Input sanitization ─────────────────────────────────────────────────
+    const firstName = sanitizeText(body.firstName ?? '', 100)
+    const lastName = sanitizeText(body.lastName ?? '', 100)
+    const email = sanitizeEmail(body.email ?? '')
+    const company = body.company ? sanitizeText(body.company, 200) : undefined
+    const message = sanitizeText(body.message ?? '', 5000)
+
+    // ── Field validation ───────────────────────────────────────────────────
+    if (!firstName || !lastName || !email || !message) {
       return NextResponse.json(
-        { error: 'Tutti i campi obbligatori devono essere compilati' },
+        { error: msg(locale, 'requiredFields') },
         { status: 400 }
       )
     }
 
-    // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(body.email)) {
+    if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { error: 'Email non valida' },
+        { error: msg(locale, 'invalidEmail') },
         { status: 400 }
       )
     }
 
-    // Get GitHub config
+    // ── GitHub config ──────────────────────────────────────────────────────
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN
     const GITHUB_REPO = process.env.GITHUB_REPO
 
     if (!GITHUB_TOKEN || !GITHUB_REPO) {
       console.error('Missing GitHub configuration')
       return NextResponse.json(
-        { error: 'Errore di configurazione. Contatta l\'amministratore.' },
+        { error: msg(locale, 'configError') },
         { status: 500 }
       )
     }
@@ -45,77 +106,93 @@ export async function POST(request: NextRequest) {
     if (!owner || !repo) {
       console.error('Invalid GITHUB_REPO format')
       return NextResponse.json(
-        { error: 'Errore di configurazione. Contatta l\'amministratore.' },
+        { error: msg(locale, 'configError') },
         { status: 500 }
       )
     }
 
-    // Prepare contact data
-    const fullName = `${body.firstName} ${body.lastName}`
-    const timestamp = new Date()
-    const dateStr = timestamp.toLocaleDateString('it-IT', { 
-      year: 'numeric', 
-      month: 'long', 
+    // ── Spam scoring ───────────────────────────────────────────────────────
+    const spamScore = calculateSpamScore({ firstName, lastName, email, company, message })
+
+    // Silent reject for definite spam — bot is not informed
+    if (spamScore >= 80) {
+      return NextResponse.json({ success: true }, { status: 200 })
+    }
+
+    // ── AI lead classification (optional — degrades gracefully) ────────────
+    const classification = await classifyLead(message)
+
+    // ── Build GitHub Issue labels ──────────────────────────────────────────
+    const labels: string[] = ['contatto']
+    if (spamScore >= 50) labels.push('suspected-spam')
+    if (classification.intent !== 'other') labels.push(classification.intent)
+    if (classification.urgency === 'high') labels.push('urgent')
+
+    // ── Build GitHub Issue body ────────────────────────────────────────────
+    const fullName = `${firstName} ${lastName}`
+    const dateStr = new Date().toLocaleDateString('it-IT', {
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })
 
-    // Save to GitHub (free database storage)
+    const aiSection = classification.summary
+      ? `\n## AI Classification\n\n- **Intent:** ${classification.intent}\n- **Urgency:** ${classification.urgency}\n- **Summary:** ${classification.summary}\n`
+      : ''
+
     const contactData = `# Nuovo Contatto
 
-**Nome:** ${body.firstName}  
-**Cognome:** ${body.lastName}  
-**Email:** ${body.email}  
-**Azienda:** ${body.company || 'Non fornita'}  
+**Nome:** ${firstName}
+**Cognome:** ${lastName}
+**Email:** ${email}
+**Azienda:** ${company || 'Non fornita'}
 **Data:** ${dateStr}
-
+${aiSection}
 ## Messaggio
 
-${body.message}
+${message}
 
 ---
 *Ricevuto dalla landing page*
 `
 
+    // ── Create GitHub Issue ────────────────────────────────────────────────
     const response = await fetch(
       `https://api.github.com/repos/${owner}/${repo}/issues`,
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github+json',
+          Authorization: `Bearer ${GITHUB_TOKEN}`,
+          Accept: 'application/vnd.github+json',
           'Content-Type': 'application/json',
           'X-GitHub-Api-Version': '2022-11-28',
         },
         body: JSON.stringify({
-          title: `📧 ${fullName}${body.company ? ' - ' + body.company : ''}`,
+          title: `📧 ${fullName}${company ? ' - ' + company : ''}`,
           body: contactData,
-          labels: ['contatto'],
+          labels,
         }),
       }
     )
 
     if (!response.ok) {
-      console.error('Failed to save contact')
+      console.error('Failed to save contact', await response.text())
       return NextResponse.json(
-        { error: 'Errore durante il salvataggio. Riprova.' },
+        { error: msg(locale, 'saveError') },
         { status: 500 }
       )
     }
 
-    // Success - GitHub will send email notification automatically
     return NextResponse.json(
-      {
-        success: true,
-        message: 'Grazie! Ti contatteremo a breve.',
-      },
+      { success: true, message: msg(locale, 'success') },
       { status: 201 }
     )
   } catch (error) {
     console.error('Error:', error)
     return NextResponse.json(
-      { error: 'Errore imprevisto. Riprova più tardi.' },
+      { error: msg(locale, 'unexpectedError') },
       { status: 500 }
     )
   }

@@ -13,7 +13,7 @@
       "firstName": "John",
       "lastName": "Doe",
       "email": "john.doe@example.com",
-      "company": "Your company",
+      "company": "Your company (optional)",
       "message": "How can we help you?"
     },
     "buttons": {
@@ -22,7 +22,46 @@
     },
     "messages": {
       "success": "Thank you! We'll contact you soon.",
-      "error": "Error"
+      "error": "Error",
+      "requiredFields": "Please fill in all required fields.",
+      "invalidEmail": "Please enter a valid email address.",
+      "configError": "Configuration error. Please contact the administrator.",
+      "saveError": "Error while saving. Please try again.",
+      "unexpectedError": "An unexpected error occurred. Please try again later.",
+      "tooManyRequests": "Too many requests. Please try again in {seconds} seconds."
+    },
+    "required": "*"
+  },
+  "it": {
+    "title": "Contattaci",
+    "subtitle": "Compila il modulo e ti risponderemo presto.",
+    "fields": {
+      "firstName": "Nome",
+      "lastName": "Cognome",
+      "email": "Email",
+      "company": "Azienda",
+      "message": "Messaggio"
+    },
+    "placeholders": {
+      "firstName": "Mario",
+      "lastName": "Rossi",
+      "email": "mario.rossi@esempio.it",
+      "company": "La tua azienda (opzionale)",
+      "message": "Come possiamo aiutarti?"
+    },
+    "buttons": {
+      "submit": "Invia Messaggio",
+      "submitting": "Invio in corso..."
+    },
+    "messages": {
+      "success": "Grazie! Ti contatteremo a breve.",
+      "error": "Errore",
+      "requiredFields": "Tutti i campi obbligatori devono essere compilati.",
+      "invalidEmail": "Email non valida.",
+      "configError": "Errore di configurazione. Contatta l'amministratore.",
+      "saveError": "Errore durante il salvataggio. Riprova.",
+      "unexpectedError": "Errore imprevisto. Riprova più tardi.",
+      "tooManyRequests": "Troppe richieste. Riprova tra {seconds} secondi."
     },
     "required": "*"
   }

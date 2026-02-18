@@ -1,6 +1,6 @@
 {
   "name": "gitforms",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "description": "GitForms - Zero-cost contact forms using GitHub Issues as free database. Open-source alternative to Typeform, Tally, FormSpree. Features: unlimited submissions, automatic email notifications, multilingual (IT/EN), 100% customizable without code, deploy anywhere (Vercel, Netlify, Docker, AWS). Perfect for startups, freelancers, agencies. MIT license.",
   "keywords": [
@@ -48,20 +48,30 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.9.0",
     "next": "^14.0.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.54.0",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@testing-library/react": "^14.3.0",
+    "@testing-library/user-event": "^14.5.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.3.0",
     "autoprefixer": "^10.4.16",
+    "jsdom": "^24.1.0",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "vitest": "^1.6.0"
   }
 }
