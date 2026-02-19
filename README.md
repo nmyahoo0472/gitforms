@@ -10,7 +10,7 @@ Every time someone submits your contact form, you receive an automatic email not
 
 - ✅ **100% Configurable without code** (JSON files)
 - ✅ Automatic email notifications for every submission
-- ✅ Multilingual (IT/EN) with auto browser language detection
+- ✅ Multilingual (IT/EN) with auto browser language detection — **fully implemented**
 - ✅ Customizable styling (colors, borders, shadows)
 - ✅ Customizable text (labels, messages, buttons)
 - ✅ Next.js 14 with App Router
@@ -18,6 +18,13 @@ Every time someone submits your contact form, you receive an automatic email not
 - ✅ Tailwind CSS
 - ✅ **Deploy anywhere** (Vercel, Netlify, Railway, Docker, AWS...)
 - ✅ Completely free
+- ✅ **Rate limiting** — max 3 submissions/min per IP (HTTP 429 + Retry-After)
+- ✅ **Spam protection** — honeypot field + server-side spam scoring
+- ✅ **Input sanitization** — strips markdown/HTML injection before GitHub API
+- ✅ **Config-driven architecture** — add fields in `fields.json`, no code changes needed
+- ✅ **react-hook-form + Zod validation** — same schema on frontend and backend
+- ✅ **AI lead classification** — optional Claude Haiku integration (intent + urgency labels)
+- ✅ **Test suite** — Vitest coverage for rate limit, sanitize, and API route
 
 ## How It Works
 
@@ -137,12 +144,43 @@ export type Locale = 'it' | 'en' | 'fr'
 
 ## Form Fields
 
-All fields are **required**:
-- First Name
-- Last Name
-- Email
-- Company
-- Message
+Defined in `config/fields.json` — add or remove fields without touching code:
+
+| Field | Type | Required |
+|-------|------|----------|
+| First Name | text | ✅ |
+| Last Name | text | ✅ |
+| Email | email | ✅ |
+| Company | text | ❌ optional |
+| Message | textarea | ✅ |
+
+To add a new field, add an entry to `config/fields.json` → it appears automatically in the form.
+
+## Security
+
+| Feature | Implementation |
+|---------|---------------|
+| **Rate limiting** | 3 req/60s per IP — `src/lib/rateLimit.ts` |
+| **Honeypot** | Hidden field catches bots silently |
+| **Sanitization** | Strips markdown/HTML injection — `src/lib/sanitize.ts` |
+| **Spam scoring** | Heuristic 0–100 score — `src/lib/spamScore.ts` |
+| **AI classification** | Claude Haiku labels intent/urgency (optional) |
+
+## Optional: AI Lead Classification
+
+Set `ANTHROPIC_API_KEY` in `.env.local` to enable automatic GitHub Issue labels:
+- `sales`, `support`, `partnership` — based on message intent
+- `urgent` — based on urgency detection
+
+Degrades gracefully if the key is absent. Cost: fractions of a cent per submission.
+
+## Testing
+
+```bash
+npm test
+```
+
+Covers: rate limiter, sanitization, API route (valid/invalid/honeypot/rate-limit).
 
 ## Test
 
