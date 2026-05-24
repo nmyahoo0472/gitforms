@@ -20,35 +20,35 @@
       {
         "id": "firstName",
         "type": "text",
-        "required": true,  // true 代表【必选项】
+        "required": true,
         "colSpan": 1,
         "validation": { "min": 1, "max": 100 }
       },
       {
         "id": "lastName",
         "type": "text",
-        "required": true,  // true 代表【必选项】
+        "required": true, 
         "colSpan": 1,
         "validation": { "min": 1, "max": 100 }
       },
       {
         "id": "email",
         "type": "email",
-        "required": true,   // true 代表【必选项】
+        "required": true, 
         "colSpan": 2,
         "validation": { "max": 254 }
       },
       {
         "id": "company",
         "type": "text",
-        "required": false,     // false 代表【可选项 / 选填】
+        "required": false,
         "colSpan": 2,
         "validation": { "max": 200 }
       },
       {
         "id": "message",
         "type": "textarea",
-        "required": true,  // true 代表【必选项】
+        "required": true, 
         "colSpan": 2,
         "validation": { "min": 20, "max": 5000 }
       }
