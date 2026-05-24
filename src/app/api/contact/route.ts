@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
     const message = sanitizeText(body.message ?? '', 5000)
 
     // ── Field validation ───────────────────────────────────────────────────
-    if (\!firstName || \!lastName || \!email || \!message) {
+    if (!firstName || !lastName || !email || !message) {
       return NextResponse.json(
         { error: msg(locale, 'requiredFields') },
         { status: 400, headers: corsHeaders() }
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (\!emailRegex.test(email)) {
+    if (!emailRegex.test(email)) {
       return NextResponse.json(
         { error: msg(locale, 'invalidEmail') },
         { status: 400, headers: corsHeaders() }
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN
     const GITHUB_REPO = process.env.GITHUB_REPO
 
-    if (\!GITHUB_TOKEN || \!GITHUB_REPO) {
+    if (!GITHUB_TOKEN || !GITHUB_REPO) {
       console.error('Missing GitHub configuration')
       return NextResponse.json(
         { error: msg(locale, 'configError') },
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
     }
 
     const [owner, repo] = GITHUB_REPO.split('/')
-    if (\!owner || \!repo) {
+    if (!owner || !repo) {
       console.error('Invalid GITHUB_REPO format')
       return NextResponse.json(
         { error: msg(locale, 'configError') },
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
     // ── Build GitHub Issue labels ──────────────────────────────────────────
     const labels: string[] = ['contatto']
     if (spamScore >= 50) labels.push('suspected-spam')
-    if (classification.intent \!== 'other') labels.push(classification.intent)
+    if (classification.intent !== 'other') labels.push(classification.intent)
     if (classification.urgency === 'high') labels.push('urgent')
 
     // ── Build GitHub Issue body ────────────────────────────────────────────
@@ -189,7 +189,7 @@ ${message}
       }
     )
 
-    if (\!response.ok) {
+    if (!response.ok) {
       console.error('Failed to save contact', await response.text())
       return NextResponse.json(
         { error: msg(locale, 'saveError') },
