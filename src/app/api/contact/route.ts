@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       'unknown'
 
     const rateCheck = checkRateLimit(ip)
-    if (\!rateCheck.allowed) {
+    if (!rateCheck.allowed) {
       return NextResponse.json(
         { error: msg(locale, 'tooManyRequests', { seconds: rateCheck.retryAfter }) },
         {
