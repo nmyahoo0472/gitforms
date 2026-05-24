@@ -4,9 +4,53 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GitForms 后台管理</title>
+  <style>
+    /* 注入一个精致的快捷按钮，使其完美融入左侧菜单栏底部 */
+    .custom-github-link {
+      position: fixed;
+      bottom: 40px;
+      left: 24px;
+      z-index: 9999;
+      width: 190px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background-color: #3182ce; /* 采用与后台一致的高雅蓝色 */
+      color: white !important;
+      text-decoration: none !important;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(49, 130, 206, 0.25);
+      transition: all 0.2s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .custom-github-link:hover {
+      background-color: #2b6cb0;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(49, 130, 206, 0.4);
+    }
+    /* 在移动端设备下自适应调整位置 */
+    @media (max-width: 768px) {
+      .custom-github-link {
+        position: fixed;
+        bottom: 20px;
+        left: 5%;
+        width: 90%;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      }
+    }
+  </style>
 </head>
 <body>
-  <!-- 将引入脚本移至 body 内部的最下方，确保执行时 body 已经渲染完毕 -->
+  <!-- 📬 快捷跳转链接：直达您的 GitHub 留言收信箱 -->
+  <a href="https://github.com/nmyahoo0472/gitforms/issues" target="_blank" class="custom-github-link">
+    📬 进入留言收件箱
+  </a>
+
+  <!-- 引入后台核心脚本 -->
   <script src="https://cdn.jsdelivr.net/npm/decap-cms@3.1.2/dist/decap-cms.js"></script>
 </body>
 </html>
