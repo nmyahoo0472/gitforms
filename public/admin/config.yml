@@ -17,11 +17,52 @@ collections:
       preview: false
     files:
       - name: "translations"
-        label: "中文文案管理"
+        label: "语言文案管理"
         file: "config/translations.json"
         fields:
           - label: "中文语言包 (en 分组)"
             name: "en"
+            widget: "object"
+            fields:
+              - { label: "网页标题", name: "title", widget: "string" }
+              - { label: "网页副标题", name: "subtitle", widget: "string" }
+              - label: "输入框名称标签"
+                name: "fields"
+                widget: "object"
+                fields:
+                  - { label: "名", name: "firstName", widget: "string" }
+                  - { label: "姓", name: "lastName", widget: "string" }
+                  - { label: "电子邮箱", name: "email", widget: "string" }
+                  - { label: "公司名称", name: "company", widget: "string" }
+                  - { label: "留言内容", name: "message", widget: "string" }
+              - label: "输入框占位符提示 (Placeholder)"
+                name: "placeholders"
+                widget: "object"
+                fields:
+                  - { label: "名字提示", name: "firstName", widget: "string" }
+                  - { label: "姓氏提示", name: "lastName", widget: "string" }
+                  - { label: "邮箱提示", name: "email", widget: "string" }
+                  - { label: "公司提示", name: "company", widget: "string" }
+                  - { label: "留言提示", name: "message", widget: "string" }
+              - label: "按钮文字"
+                name: "buttons"
+                widget: "object"
+                fields:
+                  - { label: "提交按钮文字", name: "submit", widget: "string" }
+                  - { label: "提交中文字", name: "submitting", widget: "string" }
+              - label: "反馈提示语"
+                name: "messages"
+                widget: "object"
+                fields:
+                  - { label: "提交成功提示", name: "success", widget: "string" }
+                  - { label: "发生错误提示", name: "error", widget: "string" }
+                  - { label: "必填项未写提示", name: "requiredFields", widget: "string" }
+                  - { label: "邮箱格式错误", name: "invalidEmail", widget: "string" }
+                  - { label: "保存失败提示", name: "saveError", widget: "string" }
+                  - { label: "未知错误提示", name: "unexpectedError", widget: "string" }
+                  - { label: "限流提示", name: "tooManyRequests", widget: "string" }
+          - label: "意大利语备份包 (it 分组 - 保持原样勿改)"
+            name: "it"
             widget: "object"
             fields:
               - { label: "网页标题", name: "title", widget: "string" }
